@@ -1,6 +1,8 @@
 <html>
 	<head>
 		<title>Leave a review for Hack RU XII</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="./dataFile.js"></script>
 		<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
     <script type="text/javascript">
@@ -16,12 +18,14 @@
       var ultimateTimer;
       var questionsToAsk;
       var counter = 0;
+      var speechArea;
 
       function begin(){
         context = dialogueScript.hackru;
         var welcomeMessage = context[1].welcome_message;
         questionsToAsk = context[0].questions;
         ultimateTimer = questionsToAsk.length;
+        speechArea.innerText = welcomeMessage;
         responsiveVoice.speak(welcomeMessage, 'UK English Female', {onend: askQuestions});
       }
 
@@ -30,9 +34,11 @@
           //console.log("The current question: "+question)
           var textToSpeak = questionsToAsk[counter].questionText;
           counter++;
+          speechArea.innerText = textToSpeak;
           responsiveVoice.speak(textToSpeak, 'UK English Female', {onend: listenToUser});
         }
         else{
+          speechArea.innerText = "That is everything I needed to hear. Thank you for taking the time to give me your feedback!";
           responsiveVoice.speak("That is everything I needed to hear. Thank you for taking the time to give me your feedback!", 'UK English Female', {onend: publishData});
         }
       }
@@ -49,8 +55,10 @@
           userResponses += final_transcript+";";
           responsiveVoice.speak("", 'UK English Female', {onend: askQuestions});
         }
-        else
+        else{
+          speechArea.innerText = "I had trouble hearing you. Can you repeat that?";
           responsiveVoice.speak("I had trouble hearing you. Can you repeat that?", 'UK English Female', {onend: listenToUser});
+        }
         return
       }
 
@@ -108,7 +116,14 @@
     </script>
 	</head>
 	<body>
-		<h1>This is my speech demo</h1>
-		<button onclick="begin()">Click here to get started</button>
+		<h1 class="text-center">Submit feedback about Hack RU XII</h1>
+		<div class="row text-center">
+      <br>
+      <button type="button" class="btn btn-success btn-lg" onclick="begin()" style="margin-top: 18%;">Click here to get started</button>
+      <p id="dialog-popup" style="margin-top: 8%; font-size: 30px;"></p>
+      <script type="text/javascript">
+        speechArea = document.getElementById("dialog-popup");
+      </script>
+    </div>
 	</body>
 </html>
