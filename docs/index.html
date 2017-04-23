@@ -1,0 +1,114 @@
+<html>
+	<head>
+		<title>Leave a review for Hack RU XII</title>
+    <script src="./dataFile.js"></script>
+		<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+    <script type="text/javascript">
+      console.log(dialogueScript.barber);
+      var recognition;
+      var recognizing = false;
+      var final_transcript;
+      var ignore_onend = false; //probably not needed
+      var ready = false;
+      var context;
+      var userResponses = "";
+      var finalReady = false;
+      var ultimateTimer;
+      var questionsToAsk;
+      var counter = 0;
+
+      function begin(){
+        context = dialogueScript.hackru;
+        var welcomeMessage = context[1].welcome_message;
+        questionsToAsk = context[0].questions;
+        ultimateTimer = questionsToAsk.length;
+        responsiveVoice.speak(welcomeMessage, 'UK English Female', {onend: askQuestions});
+      }
+
+      function askQuestions(){
+        if(counter < ultimateTimer){
+          //console.log("The current question: "+question)
+          var textToSpeak = questionsToAsk[counter].questionText;
+          counter++;
+          responsiveVoice.speak(textToSpeak, 'UK English Female', {onend: listenToUser});
+        }
+        else{
+          responsiveVoice.speak("That is everything I needed to hear. Thank you for taking the time to give me your feedback!", 'UK English Female', {onend: publishData});
+        }
+      }
+
+      function publishData(){
+        console.log("These are all the answers we collected:\n"+userResponses);
+      }
+
+      function verify(){
+        if(!ready)
+          return;
+        ready = false;
+        if(final_transcript.length > 0){
+          userResponses += final_transcript+";";
+          responsiveVoice.speak("", 'UK English Female', {onend: askQuestions});
+        }
+        else
+          responsiveVoice.speak("I had trouble hearing you. Can you repeat that?", 'UK English Female', {onend: listenToUser});
+        return
+      }
+
+      function listenToUser(){
+        final_transcript = '';
+        console.log("Finished speaking! Time to listen!");
+        start_timestamp = event.timeStamp;
+        if (!('webkitSpeechRecognition' in window)) {
+          alert("Your browser doesn't support speech recognition!");
+        } else {
+          recognition = new webkitSpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
+          recognition.start();
+          recognizing = true;
+
+          recognition.onerror = function(event) {
+            console.log("We reached onerror!");
+            if (event.error == 'no-speech') {
+              ignore_onend = true;
+            }
+            if (event.error == 'audio-capture') {
+              ignore_onend = true;
+            }
+            if (event.error == 'not-allowed') {
+              if (event.timeStamp - start_timestamp < 100) {
+                showInfo('info_blocked');
+              } else {
+                showInfo('info_denied');
+              }
+              ignore_onend = true;
+            }
+          };
+          recognition.onend = function() {
+            recognizing = false;
+            console.log("We reached onend!");
+            console.log("You said: "+final_transcript);
+            ready = true;
+            verify();
+          };
+          recognition.onresult = function(event) {
+            var interim_transcript = '';
+            for (var i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                final_transcript += event.results[i][0].transcript;
+              } else {
+                interim_transcript += event.results[i][0].transcript;
+              }
+            }
+            final_transcript = capitalize(final_transcript);
+          };
+        }
+      }
+    </script>
+	</head>
+	<body>
+		<h1>This is my speech demo</h1>
+		<button onclick="begin()">Click here to get started</button>
+	</body>
+</html>
